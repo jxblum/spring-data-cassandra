@@ -18,17 +18,31 @@ package org.springframework.data.cassandra.test.integration.convert;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.contains;
+import static org.mockito.Mockito.*;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.core.convert.ConverterNotFoundException;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
+import org.springframework.data.cassandra.mapping.BasicCassandraMappingContext;
+import org.springframework.data.cassandra.mapping.CassandraMappingContext;
 import org.springframework.data.cassandra.mapping.CassandraType;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
@@ -36,7 +50,9 @@ import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.DataType.Name;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.querybuilder.Assignment;
 import com.datastax.driver.core.querybuilder.BuiltStatement;
 import com.datastax.driver.core.querybuilder.Clause;
@@ -47,16 +63,30 @@ import com.datastax.driver.core.querybuilder.Update;
 import com.datastax.driver.core.querybuilder.Update.Assignments;
 
 /**
- * Tests for {@link MappingCassandraConverter}.
- * 
+ * Unit tests for {@link MappingCassandraConverter}.
+ *
  * @author Mark Paluch
  * @soundtrack Outlandich - Dont Leave Me Feat Cyt (Sun Kidz Electrocore Mix)
  */
-public class MappingCassandraConverterTests {
+@RunWith(MockitoJUnitRunner.class)
+public class MappingCassandraConverterUnitTests {
 
 	@Rule public final ExpectedException expectedException = ExpectedException.none();
 
-	private MappingCassandraConverter mappingCassandraConverter = new MappingCassandraConverter();
+	private CassandraMappingContext mappingContext;
+	private MappingCassandraConverter mappingCassandraConverter;
+
+	@Mock private Row rowMock;
+	@Mock private ColumnDefinitions columnDefinitionsMock;
+
+	@Before
+	public void setUp() throws Exception {
+
+		mappingContext = new BasicCassandraMappingContext();
+		mappingCassandraConverter = new MappingCassandraConverter(mappingContext);
+
+		mappingCassandraConverter.afterPropertiesSet();
+	}
 
 	/**
 	 * @see DATACASS-260
@@ -210,6 +240,152 @@ public class MappingCassandraConverterTests {
 		mappingCassandraConverter.write(composite, where);
 
 		assertThat(getWhereValues(where), contains((Object) "MINT"));
+	}
+
+	/**
+	 * @see DATACASS-280
+	 */
+	@Test
+	public void shouldReadStringCorrectly() {
+
+		when(rowMock.getString(0)).thenReturn("foo");
+
+		String result = mappingCassandraConverter.readRow(String.class, rowMock);
+
+		assertThat(result, is(equalTo("foo")));
+	}
+
+	/**
+	 * @see DATACASS-280
+	 */
+	@Test
+	public void shouldReadIntegerCorrectly() {
+
+		when(rowMock.getObject(0)).thenReturn(Integer.valueOf(2));
+
+		Integer result = mappingCassandraConverter.readRow(Integer.class, rowMock);
+
+		assertThat(result, is(equalTo(Integer.valueOf(2))));
+	}
+
+	/**
+	 * @see DATACASS-280
+	 */
+	@Test
+	public void shouldReadLongCorrectly() {
+
+		when(rowMock.getObject(0)).thenReturn(Long.valueOf(2));
+
+		Long result = mappingCassandraConverter.readRow(Long.class, rowMock);
+
+		assertThat(result, is(equalTo(Long.valueOf(2))));
+	}
+
+	/**
+	 * @see DATACASS-280
+	 */
+	@Test
+	public void shouldReadDoubleCorrectly() {
+
+		when(rowMock.getObject(0)).thenReturn(Integer.valueOf(2));
+
+		Double result = mappingCassandraConverter.readRow(Double.class, rowMock);
+
+		assertThat(result, is(equalTo(Double.valueOf(2))));
+	}
+
+	/**
+	 * @see DATACASS-280
+	 */
+	@Test
+	public void shouldReadFloatCorrectly() {
+
+		when(rowMock.getObject(0)).thenReturn(Integer.valueOf(2));
+
+		Float result = mappingCassandraConverter.readRow(Float.class, rowMock);
+
+		assertThat(result, is(equalTo(Float.valueOf(2))));
+	}
+
+	/**
+	 * @see DATACASS-280
+	 */
+	@Test
+	public void shouldReadBigIntegerCorrectly() {
+
+		when(rowMock.getObject(0)).thenReturn(BigInteger.valueOf(2));
+
+		BigInteger result = mappingCassandraConverter.readRow(BigInteger.class, rowMock);
+
+		assertThat(result, is(equalTo(BigInteger.valueOf(2))));
+	}
+
+	/**
+	 * @see DATACASS-280
+	 */
+	@Test
+	public void shouldReadBigDecimalCorrectly() {
+
+		when(rowMock.getObject(0)).thenReturn(BigDecimal.valueOf(2));
+
+		BigDecimal result = mappingCassandraConverter.readRow(BigDecimal.class, rowMock);
+
+		assertThat(result, is(equalTo(BigDecimal.valueOf(2))));
+	}
+
+	/**
+	 * @see DATACASS-280
+	 */
+	@Test
+	public void shouldReadUUIDCorrectly() {
+
+		UUID uuid = UUID.randomUUID();
+		when(rowMock.getUUID(0)).thenReturn(uuid);
+
+		UUID result = mappingCassandraConverter.readRow(UUID.class, rowMock);
+
+		assertThat(result, is(equalTo(uuid)));
+	}
+
+	/**
+	 * @see DATACASS-280
+	 */
+	@Test
+	public void shouldReadInetAddressCorrectly() throws UnknownHostException {
+
+		InetAddress localHost = InetAddress.getLocalHost();
+		when(rowMock.getInet(0)).thenReturn(localHost);
+
+		InetAddress result = mappingCassandraConverter.readRow(InetAddress.class, rowMock);
+
+		assertThat(result, is(equalTo(localHost)));
+	}
+
+	/**
+	 * @see DATACASS-280
+	 */
+	@Test
+	public void shouldReadDateCorrectly() throws UnknownHostException {
+
+		Date date = new Date(1);
+		when(rowMock.getDate(0)).thenReturn(date);
+
+		Date result = mappingCassandraConverter.readRow(Date.class, rowMock);
+
+		assertThat(result, is(equalTo(date)));
+	}
+
+	/**
+	 * @see DATACASS-280
+	 */
+	@Test
+	public void shouldReadBooleanCorrectly() throws UnknownHostException {
+
+		when(rowMock.getBool(0)).thenReturn(Boolean.valueOf(true));
+
+		Boolean result = mappingCassandraConverter.readRow(Boolean.class, rowMock);
+
+		assertThat(result, is(equalTo(Boolean.valueOf(true))));
 	}
 
 	@SuppressWarnings("unchecked")

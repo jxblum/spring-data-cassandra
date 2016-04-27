@@ -1,13 +1,12 @@
 package org.springframework.data.cassandra.test.integration.querymethods.declared;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -267,5 +266,29 @@ public abstract class QueryIntegrationTests extends AbstractSpringDataEmbeddedCa
 			assertEquals(saved.getLastname(), person.getLastname());
 			assertEquals(saved.getFirstname(), person.getFirstname());
 		}
+	}
+
+	@Test
+	public void findOptionalShouldReturnTargetType() {
+
+		Person saved = new Person();
+		saved.setFirstname(uuid());
+		saved.setLastname(uuid());
+		saved.setNumberOfChildren(1);
+
+		saved = r.save(saved);
+
+		Optional<Person> optional = r.findOptionalWithLastnameAndFirstname(saved.getLastname(), saved.getFirstname());
+
+		assertTrue(optional.isPresent());
+		assertTrue(optional.get() instanceof Person);
+	}
+
+	@Test
+	public void findOptionalShouldAbsentOptional() {
+
+		Optional<Person> optional = r.findOptionalWithLastnameAndFirstname("not", "existent");
+
+		assertFalse(optional.isPresent());
 	}
 }
