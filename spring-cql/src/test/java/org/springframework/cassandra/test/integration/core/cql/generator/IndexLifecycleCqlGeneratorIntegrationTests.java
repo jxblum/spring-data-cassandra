@@ -1,12 +1,12 @@
 /*
  * Copyright 2013-2016 the original author or authors.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,12 +23,12 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest;
-import org.springframework.cassandra.test.unit.core.cql.generator.CreateIndexCqlGeneratorTests;
-import org.springframework.cassandra.test.unit.core.cql.generator.DropIndexCqlGeneratorTests;
+import org.springframework.cassandra.core.cql.generator.CreateIndexCqlGeneratorUnitTests;
+import org.springframework.cassandra.core.cql.generator.DropIndexCqlGeneratorUnitTests;
 
 /**
  * Integration tests that reuse unit tests.
- * 
+ *
  * @author Matthew T. Adams
  * @author Oliver Gierke
  * @author Mark Paluch
@@ -39,15 +39,15 @@ public class IndexLifecycleCqlGeneratorIntegrationTests extends AbstractKeyspace
 
     {
         cassandraRule.before(new ClassPathCQLDataSet(
-                "integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql", this.keyspace));
+                "integration/cql/generator/CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql", false, false, this.keyspace));
     }
 
     @Test
     public void lifecycleTest() {
 
-        CreateIndexCqlGeneratorTests.BasicTest createTest = new CreateIndexCqlGeneratorTests.BasicTest();
-        DropIndexCqlGeneratorTests.BasicTest dropTest = new DropIndexCqlGeneratorTests.BasicTest();
-        DropIndexCqlGeneratorTests.IfExistsTest dropIfExists = new DropIndexCqlGeneratorTests.IfExistsTest();
+        CreateIndexCqlGeneratorUnitTests.BasicTest createTest = new CreateIndexCqlGeneratorUnitTests.BasicTest();
+        DropIndexCqlGeneratorUnitTests.BasicTest dropTest = new DropIndexCqlGeneratorUnitTests.BasicTest();
+        DropIndexCqlGeneratorUnitTests.IfExistsTest dropIfExists = new DropIndexCqlGeneratorUnitTests.IfExistsTest();
 
         createTest.prepare();
         dropTest.prepare();

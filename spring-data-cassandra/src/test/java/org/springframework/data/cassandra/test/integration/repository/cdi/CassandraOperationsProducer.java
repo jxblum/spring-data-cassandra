@@ -28,19 +28,19 @@ import org.springframework.cassandra.core.cql.CqlIdentifier;
 import org.springframework.cassandra.core.keyspace.CreateKeyspaceSpecification;
 import org.springframework.cassandra.core.keyspace.DropKeyspaceSpecification;
 import org.springframework.cassandra.test.integration.AbstractEmbeddedCassandraIntegrationTest;
-import org.springframework.cassandra.test.unit.support.Utils;
+import org.springframework.cassandra.support.RandomKeySpaceName;
 import org.springframework.data.cassandra.convert.MappingCassandraConverter;
 import org.springframework.data.cassandra.core.CassandraAdminTemplate;
 import org.springframework.data.cassandra.core.CassandraOperations;
 import org.springframework.data.cassandra.mapping.CassandraPersistentEntity;
-import org.springframework.data.cassandra.test.integration.repository.User;
+import org.springframework.data.cassandra.test.integration.repository.simple.User;
 
 /**
  * @author Mark Paluch
  */
 class CassandraOperationsProducer {
 
-	public final static String KEYSPACE_NAME = Utils.randomKeyspaceName();
+	public final static String KEYSPACE_NAME = RandomKeySpaceName.create();
 
 	@Produces
 	@ApplicationScoped

@@ -20,8 +20,8 @@ import java.util.UUID;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.springframework.cassandra.core.SessionCallback;
+import org.springframework.cassandra.support.RandomKeySpaceName;
 import org.springframework.cassandra.test.integration.support.CassandraConnectionProperties;
-import org.springframework.cassandra.test.unit.support.Utils;
 import org.springframework.dao.DataAccessException;
 
 import com.datastax.driver.core.Cluster;
@@ -59,7 +59,7 @@ public class AbstractEmbeddedCassandraIntegrationTest {
 			});
 
 	public static String randomKeyspaceName() {
-		return Utils.randomKeyspaceName();
+		return RandomKeySpaceName.create();
 	}
 
 	public static String uuid() {

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.springframework.data.cassandra.test.integration.mapping.mapid.template;
 
 import static org.junit.Assert.assertEquals;
@@ -23,6 +39,11 @@ import org.springframework.data.cassandra.test.integration.support.IntegrationTe
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+/**
+ * Integration tests for {@link org.springframework.data.cassandra.core.CassandraTemplate} with {@link MapId}.
+ *
+ * @author Matthew T. Adams
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 public class CassandraTemplateMapIdIntegrationTest extends AbstractSpringDataEmbeddedCassandraIntegrationTest {
@@ -36,12 +57,11 @@ public class CassandraTemplateMapIdIntegrationTest extends AbstractSpringDataEmb
 		}
 	}
 
-	@Autowired
-	CassandraOperations t;
+	@Autowired CassandraOperations template;
 
 	@Before
 	public void before() {
-		assertNotNull(t);
+		assertNotNull(template);
 	}
 
 	@Test
@@ -50,28 +70,28 @@ public class CassandraTemplateMapIdIntegrationTest extends AbstractSpringDataEmb
 		// insert
 		SinglePkc inserted = new SinglePkc(uuid());
 		inserted.setValue(uuid());
-		SinglePkc saved = t.insert(inserted);
+		SinglePkc saved = template.insert(inserted);
 		assertSame(saved, inserted);
 
 		// select
 		MapId id = id("key", saved.getKey());
-		SinglePkc selected = t.selectOneById(SinglePkc.class, id);
+		SinglePkc selected = template.selectOneById(SinglePkc.class, id);
 		assertNotSame(selected, saved);
 		assertEquals(saved.getKey(), selected.getKey());
 		assertEquals(saved.getValue(), selected.getValue());
 
 		// update
 		selected.setValue(uuid());
-		SinglePkc updated = t.update(selected);
+		SinglePkc updated = template.update(selected);
 		assertSame(updated, selected);
 
-		selected = t.selectOneById(SinglePkc.class, id);
+		selected = template.selectOneById(SinglePkc.class, id);
 		assertNotSame(selected, updated);
 		assertEquals(updated.getValue(), selected.getValue());
 
 		// delete
-		t.delete(selected);
-		assertNull(t.selectOneById(SinglePkc.class, id));
+		template.delete(selected);
+		assertNull(template.selectOneById(SinglePkc.class, id));
 	}
 
 	@Table
@@ -117,12 +137,12 @@ public class CassandraTemplateMapIdIntegrationTest extends AbstractSpringDataEmb
 		// insert
 		MultiPkc inserted = new MultiPkc(uuid(), uuid());
 		inserted.setValue(uuid());
-		MultiPkc saved = t.insert(inserted);
+		MultiPkc saved = template.insert(inserted);
 		assertSame(saved, inserted);
 
 		// select
 		MapId id = id("key0", saved.getKey0()).with("key1", saved.getKey1());
-		MultiPkc selected = t.selectOneById(MultiPkc.class, id);
+		MultiPkc selected = template.selectOneById(MultiPkc.class, id);
 		assertNotSame(selected, saved);
 		assertEquals(saved.getKey0(), selected.getKey0());
 		assertEquals(saved.getKey1(), selected.getKey1());
@@ -130,16 +150,16 @@ public class CassandraTemplateMapIdIntegrationTest extends AbstractSpringDataEmb
 
 		// update
 		selected.setValue(uuid());
-		MultiPkc updated = t.update(selected);
+		MultiPkc updated = template.update(selected);
 		assertSame(updated, selected);
 
-		selected = t.selectOneById(MultiPkc.class, id);
+		selected = template.selectOneById(MultiPkc.class, id);
 		assertNotSame(selected, updated);
 		assertEquals(updated.getValue(), selected.getValue());
 
 		// delete
-		t.delete(selected);
-		assertNull(t.selectOneById(MultiPkc.class, id));
+		template.delete(selected);
+		assertNull(template.selectOneById(MultiPkc.class, id));
 	}
 
 	@Table

@@ -27,8 +27,6 @@ import org.cassandraunit.CQLDataLoader;
 import org.cassandraunit.dataset.CQLDataSet;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.rules.ExternalResource;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.springframework.cassandra.core.SessionCallback;
 import org.springframework.cassandra.test.integration.support.CassandraConnectionProperties;
 import org.springframework.dao.DataAccessException;
@@ -40,7 +38,16 @@ import com.datastax.driver.core.Session;
 
 /**
  * Rule to provide a Cassandra context for integration tests. This rule can use/spin up either an embedded Cassandra
- * instance or use an external instance.
+ * instance or use an external instance. Typical usage:
+ *
+ * <pre>
+ * {
+ * 	public class MyIntegrationTest {
+ * 		&#064;Rule public CassandraRule rule = new CassandraRule(CONFIG). //
+ * 				before(new ClassPathCQLDataSet("CreateIndexCqlGeneratorIntegrationTests-BasicTest.cql", "keyspace"));
+ * 	}
+ * }
+ * </pre>
  *
  * @author Mark Paluch
  */
@@ -76,7 +83,6 @@ public class CassandraRule extends ExternalResource {
 		this.configurationFileName = configurationFileName;
 		this.startUpTimeout = startUpTimeout;
 	}
-
 
 	/**
 	 * Add a {@link CQLDataSet} to execute before each test run.

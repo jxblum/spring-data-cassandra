@@ -256,9 +256,11 @@
 					<useFile>false</useFile>
 					<includes>
 						<include>**/test/unit/**/*.java</include>
+						<include>**/*UnitTests.java</include>
 					</includes>
 					<excludes>
 						<exclude>**/test/integration/**/*.java</exclude>
+						<exclude>**/**IntegrationTests.java</exclude>
 						<exclude>**/test/performance/**/*.java</exclude>
 					</excludes>
 					<systemPropertyVariables>
@@ -277,9 +279,11 @@
 					<useFile>false</useFile>
 					<includes>
 						<include>**/test/integration/**/*.java</include>
+						<include>**/*IntegrationTests.java</include>
 					</includes>
 					<excludes>
 						<exclude>**/test/unit/**/*.java</exclude>
+						<exclude>**/*UnitTests.java</exclude>
 						<exclude>**/test/performance/**/*.java</exclude>
 					</excludes>
 					<systemPropertyVariables>
