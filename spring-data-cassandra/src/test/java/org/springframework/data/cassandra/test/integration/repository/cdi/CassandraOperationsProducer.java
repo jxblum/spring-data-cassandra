@@ -83,7 +83,7 @@ class CassandraOperationsProducer {
 		schemaCreator.createTables(false, false, true);
 
 		for (CassandraPersistentEntity<?> entity : cassandraTemplate.getConverter().getMappingContext()
-				.getPersistentEntities()) {
+				.getTableEntities()) {
 			cassandraTemplate.truncate(entity.getType());
 		}
 
