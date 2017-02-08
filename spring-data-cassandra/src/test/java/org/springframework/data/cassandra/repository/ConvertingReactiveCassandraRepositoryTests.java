@@ -17,6 +17,9 @@ package org.springframework.data.cassandra.repository;
 
 import static org.assertj.core.api.Assertions.*;
 
+import io.reactivex.Flowable;
+import io.reactivex.Maybe;
+import io.reactivex.observers.TestObserver;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.TestSubscriber;
@@ -39,6 +42,7 @@ import org.springframework.data.cassandra.repository.config.EnableReactiveCassan
 import org.springframework.data.cassandra.test.integration.support.IntegrationTestConfig;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.data.repository.reactive.RxJava1CrudRepository;
+import org.springframework.data.repository.reactive.RxJava2CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -69,9 +73,10 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 
 	@Autowired Session session;
 	@Autowired ReactiveCassandraTemplate template;
-	@Autowired MixedPersonRepostitory reactiveRepository;
+	@Autowired MixedPersonRepository reactiveRepository;
 	@Autowired PersonRepostitory reactivePersonRepostitory;
 	@Autowired RxJava1PersonRepostitory rxJava1PersonRepostitory;
+	@Autowired RxJava2PersonRepostitory rxJava2PersonRepostitory;
 
 	Person dave, oliver, carter, boyd;
 
@@ -130,7 +135,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	}
 
 	@Test // DATACASS-335
-	public void simpleRxJavaMethodsShouldWork() {
+	public void simpleRxJava1MethodsShouldWork() {
 
 		rx.observers.TestSubscriber<Boolean> subscriber = new rx.observers.TestSubscriber<>();
 
@@ -143,7 +148,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	}
 
 	@Test // DATACASS-335
-	public void existsWithSingleRxJavaIdMethodsShouldWork() {
+	public void existsWithSingleRxJava1IdMethodsShouldWork() {
 
 		rx.observers.TestSubscriber<Boolean> subscriber = new rx.observers.TestSubscriber<>();
 
@@ -156,7 +161,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	}
 
 	@Test // DATACASS-335
-	public void singleRxJavaQueryMethodShouldWork() {
+	public void singleRxJava1QueryMethodShouldWork() {
 
 		rx.observers.TestSubscriber<Person> subscriber = new rx.observers.TestSubscriber<>();
 
@@ -169,7 +174,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	}
 
 	@Test // DATACASS-335
-	public void singleProjectedRxJavaQueryMethodShouldWork() {
+	public void singleProjectedRxJava1QueryMethodShouldWork() {
 
 		rx.observers.TestSubscriber<ProjectedPerson> subscriber = new rx.observers.TestSubscriber<>();
 
@@ -184,7 +189,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	}
 
 	@Test // DATACASS-335
-	public void observableRxJavaQueryMethodShouldWork() {
+	public void observableRxJava1QueryMethodShouldWork() {
 
 		rx.observers.TestSubscriber<Person> subscriber = new rx.observers.TestSubscriber<>();
 
@@ -194,6 +199,83 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 		subscriber.assertCompleted();
 		subscriber.assertNoErrors();
 		subscriber.assertValue(boyd);
+	}
+
+	@Test // DATACASS-398
+	public void simpleRxJava2MethodsShouldWork() {
+
+		TestObserver<Boolean> testObserver = rxJava2PersonRepostitory.exists(dave.getId()).test();
+
+		testObserver.awaitTerminalEvent();
+		testObserver.assertComplete();
+		testObserver.assertNoErrors();
+		testObserver.assertValue(true);
+	}
+
+	@Test // DATACASS-398
+	public void existsWithSingleRxJava2IdMethodsShouldWork() {
+
+		TestObserver<Boolean> testObserver = rxJava2PersonRepostitory.exists(io.reactivex.Single.just(dave.getId())).test();
+
+		testObserver.awaitTerminalEvent();
+		testObserver.assertComplete();
+		testObserver.assertNoErrors();
+		testObserver.assertValue(true);
+	}
+
+	@Test // DATACASS-398
+	public void flowableRxJava2QueryMethodShouldWork() {
+
+		io.reactivex.subscribers.TestSubscriber<Person> testSubscriber = rxJava2PersonRepostitory
+				.findManyByLastname(dave.getLastname()).test();
+
+		testSubscriber.awaitTerminalEvent();
+		testSubscriber.assertComplete();
+		testSubscriber.assertNoErrors();
+		testSubscriber.assertValueCount(2);
+	}
+
+	@Test // DATACASS-398
+	public void singleProjectedRxJava2QueryMethodShouldWork() {
+
+		TestObserver<ProjectedPerson> testObserver = rxJava2PersonRepostitory
+				.findProjectedByLastname(Maybe.just(carter.getLastname())).test();
+
+		testObserver.awaitTerminalEvent();
+		testObserver.assertComplete();
+		testObserver.assertNoErrors();
+
+		testObserver.assertValue(actual -> {
+			assertThat(actual.getFirstname()).isEqualTo(carter.getFirstname());
+			return true;
+		});
+	}
+
+	@Test // DATACASS-398
+	public void observableProjectedRxJava2QueryMethodShouldWork() {
+
+		TestObserver<ProjectedPerson> testObserver = rxJava2PersonRepostitory
+				.findProjectedByLastname(Single.just(carter.getLastname())).test();
+
+		testObserver.awaitTerminalEvent();
+		testObserver.assertComplete();
+		testObserver.assertNoErrors();
+
+		testObserver.assertValue(actual -> {
+			assertThat(actual.getFirstname()).isEqualTo(carter.getFirstname());
+			return true;
+		});
+	}
+
+	@Test // DATACASS-398
+	public void maybeRxJava2QueryMethodShouldWork() {
+
+		TestObserver<Person> testObserver = rxJava2PersonRepostitory.findByLastname(boyd.getLastname()).test();
+
+		testObserver.awaitTerminalEvent();
+		testObserver.assertComplete();
+		testObserver.assertNoErrors();
+		testObserver.assertValue(boyd);
 	}
 
 	@Test // DATACASS-335
@@ -231,7 +313,19 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	}
 
 	@Repository
-	interface MixedPersonRepostitory extends ReactiveCassandraRepository<Person, String> {
+	interface RxJava2PersonRepostitory extends RxJava2CrudRepository<Person, String> {
+
+		Flowable<Person> findManyByLastname(String lastname);
+
+		Maybe<Person> findByLastname(String lastname);
+
+		io.reactivex.Single<ProjectedPerson> findProjectedByLastname(Maybe<String> lastname);
+
+		io.reactivex.Observable<ProjectedPerson> findProjectedByLastname(Single<String> lastname);
+	}
+
+	@Repository
+	interface MixedPersonRepository extends ReactiveCassandraRepository<Person, String> {
 
 		Single<Person> findByLastname(String lastname);
 
