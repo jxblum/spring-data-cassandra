@@ -15,16 +15,7 @@
  */
 package org.springframework.data.cassandra.repository;
 
-import static org.assertj.core.api.Assertions.*;
-
-import io.reactivex.Flowable;
-import io.reactivex.Maybe;
-import io.reactivex.observers.TestObserver;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
-import rx.Observable;
-import rx.Single;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.List;
@@ -46,24 +37,36 @@ import org.springframework.data.repository.reactive.RxJava1CrudRepository;
 import org.springframework.data.repository.reactive.RxJava2CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.TableMetadata;
 
+import io.reactivex.Flowable;
+import io.reactivex.Maybe;
+import io.reactivex.observers.TestObserver;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
+import rx.Observable;
+import rx.Single;
+
 /**
- * Test for {@link ReactiveCassandraRepository} using reactive wrapper type conversion.
+ * Tests for {@link ReactiveCassandraRepository} using reactive wrapper type conversion.
  *
  * @author Mark Paluch
+ * @see org.springframework.cassandra.test.integration.AbstractKeyspaceCreatingIntegrationTest
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @ContextConfiguration(classes = ConvertingReactiveCassandraRepositoryTests.Config.class)
 public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspaceCreatingIntegrationTest {
 
-	@EnableReactiveCassandraRepositories(includeFilters = @Filter(value = Repository.class),
-			considerNestedRepositories = true)
 	@Configuration
+	@EnableReactiveCassandraRepositories(considerNestedRepositories = true,
+		includeFilters = @Filter(value = Repository.class))
 	public static class Config extends IntegrationTestConfig {
 
 		@Override
@@ -99,18 +102,20 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 		carter = new Person("49", "Carter", "Beauford");
 		boyd = new Person("45", "Boyd", "Tinsley");
 
-		StepVerifier.create(reactiveRepository.save(Arrays.asList(oliver, dave, carter, boyd))).expectNextCount(4)
-				.verifyComplete();
+		StepVerifier.create(reactiveRepository.save(Arrays.asList(oliver, dave, carter, boyd)))
+			.expectNextCount(4).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void reactiveStreamsMethodsShouldWork() {
-		StepVerifier.create(reactivePersonRepostitory.exists(dave.getId())).expectNext(true).verifyComplete();
+		StepVerifier.create(reactivePersonRepostitory.exists(dave.getId()))
+			.expectNext(true).verifyComplete();
 	}
 
 	@Test // DATACASS-335
 	public void reactiveStreamsQueryMethodsShouldWork() {
-		StepVerifier.create(reactivePersonRepostitory.findByLastname(boyd.getLastname())).expectNext(boyd).verifyComplete();
+		StepVerifier.create(reactivePersonRepostitory.findByLastname(boyd.getLastname()))
+			.expectNext(boyd).verifyComplete();
 	}
 
 	@Test // DATACASS-360
@@ -118,7 +123,6 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 
 		StepVerifier.create(reactivePersonRepostitory.findProjectedByLastname(boyd.getLastname()))
 				.consumeNextWith(actual -> {
-
 					assertThat(actual.firstname).isEqualTo(boyd.getFirstname());
 					assertThat(actual.lastname).isEqualTo(boyd.getLastname());
 				}).verifyComplete();
@@ -171,6 +175,7 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 				.getOnNextEvents();
 
 		ProjectedPerson projectedPerson = values.get(0);
+
 		assertThat(projectedPerson.getFirstname()).isEqualTo(carter.getFirstname());
 	}
 
@@ -199,7 +204,8 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-398
 	public void existsWithSingleRxJava2IdMethodsShouldWork() {
 
-		TestObserver<Boolean> testObserver = rxJava2PersonRepostitory.exists(io.reactivex.Single.just(dave.getId())).test();
+		TestObserver<Boolean> testObserver =
+			rxJava2PersonRepostitory.exists(io.reactivex.Single.just(dave.getId())).test();
 
 		testObserver.awaitTerminalEvent();
 		testObserver.assertComplete();
@@ -210,8 +216,8 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-398
 	public void flowableRxJava2QueryMethodShouldWork() {
 
-		io.reactivex.subscribers.TestSubscriber<Person> testSubscriber = rxJava2PersonRepostitory
-				.findManyByLastname(dave.getLastname()).test();
+		io.reactivex.subscribers.TestSubscriber<Person> testSubscriber =
+			rxJava2PersonRepostitory.findManyByLastname(dave.getLastname()).test();
 
 		testSubscriber.awaitTerminalEvent();
 		testSubscriber.assertComplete();
@@ -222,8 +228,8 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-398
 	public void singleProjectedRxJava2QueryMethodShouldWork() {
 
-		TestObserver<ProjectedPerson> testObserver = rxJava2PersonRepostitory
-				.findProjectedByLastname(Maybe.just(carter.getLastname())).test();
+		TestObserver<ProjectedPerson> testObserver =
+			rxJava2PersonRepostitory .findProjectedByLastname(Maybe.just(carter.getLastname())).test();
 
 		testObserver.awaitTerminalEvent();
 		testObserver.assertComplete();
@@ -238,8 +244,8 @@ public class ConvertingReactiveCassandraRepositoryTests extends AbstractKeyspace
 	@Test // DATACASS-398
 	public void observableProjectedRxJava2QueryMethodShouldWork() {
 
-		TestObserver<ProjectedPerson> testObserver = rxJava2PersonRepostitory
-				.findProjectedByLastname(Single.just(carter.getLastname())).test();
+		TestObserver<ProjectedPerson> testObserver =
+			rxJava2PersonRepostitory.findProjectedByLastname(Single.just(carter.getLastname())).test();
 
 		testObserver.awaitTerminalEvent();
 		testObserver.assertComplete();

@@ -165,8 +165,8 @@
 						<artifactId>logback-core</artifactId>
 					</exclusion>
 					<exclusion>
-						<artifactId>guava</artifactId>
 						<groupId>com.google.guava</groupId>
+						<artifactId>guava</artifactId>
 					</exclusion>
 					<exclusion>
 						<groupId>io.netty</groupId>
