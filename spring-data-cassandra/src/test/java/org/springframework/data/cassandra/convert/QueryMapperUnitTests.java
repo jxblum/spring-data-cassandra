@@ -77,7 +77,8 @@ public class QueryMapperUnitTests {
 	@Before
 	public void before() throws Exception {
 
-		CustomConversions customConversions = new CustomConversions(Collections.singletonList(CurrencyConverter.INSTANCE));
+		CassandraCustomConversions customConversions =
+			new CassandraCustomConversions(Collections.singletonList(CurrencyConverter.INSTANCE));
 
 		mappingContext.setCustomConversions(customConversions);
 		mappingContext.setUserTypeResolver(userTypeResolver);
