@@ -15,7 +15,7 @@
  */
 package org.springframework.data.cassandra.repository.support;
 
-import static org.springframework.data.cassandra.core.query.Criteria.*;
+import static org.springframework.data.cassandra.core.query.Criteria.where;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -47,6 +47,7 @@ import com.datastax.driver.core.querybuilder.Select;
  * @author Alex Shvid
  * @author Matthew T. Adams
  * @author Mark Paluch
+ * @see org.springframework.data.cassandra.repository.CassandraRepository
  */
 public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, ID> {
 
@@ -55,8 +56,8 @@ public class SimpleCassandraRepository<T, ID> implements CassandraRepository<T, 
 	private final CassandraOperations operations;
 
 	/**
-	 * Create a new {@link SimpleCassandraRepository} for the given {@link CassandraEntityInformation} and
-	 * {@link CassandraTemplate}.
+	 * Create a new {@link SimpleCassandraRepository} for the given {@link CassandraEntityInformation}
+	 * and {@link CassandraTemplate}.
 	 *
 	 * @param metadata must not be {@literal null}.
 	 * @param operations must not be {@literal null}.
